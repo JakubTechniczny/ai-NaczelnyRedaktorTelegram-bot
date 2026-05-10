@@ -65,12 +65,13 @@ def send_to_telegram(text, thread_id):
     return r.status_code
 
 if __name__ == "__main__":
-    # 1. GENEROWANIE I WYSYŁKA NEWSÓW AI
+    # 1. SEKCJA AI (To już Ci działa, upewnij się tylko że thread_id jest poprawne)
     ai_list = get_ai_news()
     ai_msg = "*🤖 NAJNOWSZE MODELE AI (via AI o AI)*\n\n" + "\n\n".join([f"• {n}" for n in ai_list])
     send_to_telegram(ai_msg, THREAD_AI)
     
-    # 2. GENEROWANIE I WYSYŁKA RAPORTU GIEŁDOWEGO
-    # Tu w przyszłości dodamy pobieranie kursów (np. yfinance)
-    stock_msg = f"*📈 RAPORT GIEŁDOWY*\n_Aktualizacja: {datetime.now().strftime('%H:%M')}_\n\nMonitorowanie trendów rynkowych w toku. Sprawdź sentyment na X."
+    # 2. SEKCJA GIEŁDA (Tu była blokada - teraz wywołujemy nową funkcję)
+    stocks_list = get_stock_data() # Wywołujemy funkcję, która pobiera ceny
+    stock_msg = f"*📈 RAPORT GIEŁDOWY*\n_Aktualizacja: {datetime.now().strftime('%H:%M')}_\n\n" + "\n".join(stocks_list)
     send_to_telegram(stock_msg, THREAD_GIELDA)
+
