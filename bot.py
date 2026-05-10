@@ -10,22 +10,28 @@ THREAD_AI = 3      # WPISZ TU ID sekcji Nowości AI od Rose bota
 
 import yfinance as yf
 
+
 def get_stock_data():
-    # Pobieramy dane dla S&P500 (^GSPC) i Nvidii (NVDA)
+    # Pobieramy dane dla S&P500, Nvidii i Tesli
     tickers = {"S&P 500": "^GSPC", "Nvidia": "NVDA", "Tesla": "TSLA"}
     report = []
     for name, symbol in tickers.items():
-        ticker = yf.Ticker(symbol)
-        price = ticker.fast_info['last_price']
-        change = ticker.fast_info['year_to_date_change'] * 100 # przykładowa zmiana
-        report.append(f"• {name}: {price:.2f} USD ({change:+.2f}%)")
+        try:
+            ticker = yf.Ticker(symbol)
+            # Pobieramy historię z ostatniego dnia, aby obliczyć zmianę
+            hist = ticker.history(period="2d")
+            if len(hist) >= 2:
+                price_now = hist['Close'].iloc[-1]
+                price_prev = hist['Close'].iloc[-2]
+                change = ((price_now - price_prev) / price_prev) * 100
+                report.append(f"• {name}: {price_now:.2f} USD ({change:+.2f}%)")
+            else:
+                # Jeśli rynek jest zamknięty lub brak danych
+                price = ticker.fast_info['last_price']
+                report.append(f"• {name}: {price:.2f} USD (0.00%)")
+        except Exception as e:
+            report.append(f"• {name}: Błąd danych")
     return report
-
-# W sekcji if __name__ == "__main__": podmień raport giełdowy:
-stocks = get_stock_data()
-stock_msg = f"*📈 RAPORT GIEŁDOWY*\n\n" + "\n".join(stocks)
-send_to_telegram(stock_msg, THREAD_GIELDA)
-
 
 def get_ai_news():
     try:
