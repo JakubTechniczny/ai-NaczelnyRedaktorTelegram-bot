@@ -1,4 +1,4 @@
-import os
+⁸import os
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -9,19 +9,19 @@ THREAD_GIELDA = 2  # ID, które już mamy
 THREAD_AI = 3      # WPISZ TU ID sekcji Nowości AI od Rose bota
 
 def get_ai_news():
-    """Pobiera 3 najnowsze nagłówki z portalu aioai.pl"""
     try:
         url = "https://aioai.pl"
         headers = {'User-Agent': 'Mozilla/5.0'}
         response = requests.get(url, headers=headers, timeout=10)
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # Selektor h2 zazwyczaj zawiera tytuły artykułów
-        articles = soup.find_all('h2', limit=3)
-        news = [a.get_text(strip=True) for a in articles]
-        return news if news else ["Brak nowych wiadomości w tej chwili."]
+        # Szukamy konkretnie tytułów w tagach h2 lub h3, które są linkami
+        articles = soup.select('h2 a, h3 a') 
+        news = [a.get_text(strip=True) for a in articles if len(a.get_text()) > 10]
+        return news[:3] # Weź 3 najświeższe
     except Exception as e:
-        return [f"Błąd połączenia z portalem: {e}"]
+        return [f"Błąd scrapowania: {e}"]
+
 
 def send_to_telegram(text, thread_id):
     """Wysyła sformatowaną wiadomość do konkretnego wątku"""
