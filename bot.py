@@ -95,9 +95,18 @@ def get_ai_news():
 def send_to_telegram(text, thread_id):
     token = os.getenv('TELEGRAM_TOKEN')
     chat_id = os.getenv('TELEGRAM_CHAT_ID')
+    # PONIŻEJ POPRAWNY ADRES:
     url = f"https://telegram.org{token}/sendMessage"
-    payload = {"chat_id": chat_id, "message_thread_id": thread_id, "text": text, "parse_mode": "Markdown"}
-    return requests.post(url, json=payload).status_code
+
+    payload = {
+        "chat_id": chat_id,
+        "message_thread_id": thread_id,
+        "text": text,
+        "parse_mode": "Markdown"
+    }
+    r = requests.post(url, json=payload)
+    return r.status_code
+
 
 if __name__ == "__main__":
     # 1. SEKCJA AI
