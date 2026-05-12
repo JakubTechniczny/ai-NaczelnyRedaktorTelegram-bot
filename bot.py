@@ -102,7 +102,8 @@ def send_to_telegram(text, thread_id):
         "chat_id": chat_id,
         "message_thread_id": thread_id,
         "text": text,
-        "parse_mode": "Markdown"
+        "parse_mode": "HTML" # Zmień z Markdown na HTML
+
     }
     r = requests.post(url, json=payload)
     return r.status_code
