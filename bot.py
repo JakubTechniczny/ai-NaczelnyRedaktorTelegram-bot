@@ -47,20 +47,9 @@ def summarize_with_gemini(raw_data, category):
         return f"Błąd AI: {e}"
 
 def send_to_telegram(text, thread_id):
-    token = os.getenv('TELEGRAM_TOKEN')
-    chat_id = os.getenv('TELEGRAM_CHAT_ID')
-    
-    # Usuwamy ewentualne białe znaki/spacje z tokena, jeśli ktoś je wkleił do Secrets
-    if token:
-        token = token.strip()
-    
-    # KONSTRUKCJA ADRESU - zwróć uwagę na brak dodatkowych ukośników
+    token = os.getenv('TELEGRAM_TOKEN').strip()
+    chat_id = os.getenv('TELEGRAM_CHAT_ID').strip()
     url = f"https://telegram.org{token}/sendMessage"
-
-    # DEBUG: sprawdzamy długość tokena (nie drukujemy go, by nie wyciekł)
-    if not token:
-        print("BŁĄD: Brak TELEGRAM_TOKEN w zmiennych środowiskowych!")
-        return 401
 
     payload = {
         "chat_id": chat_id,
@@ -70,14 +59,24 @@ def send_to_telegram(text, thread_id):
     }
     
     try:
-        r = requests.post(url, json=payload, timeout=10)
-        print(f"DEBUG: Próba wysłania do wątku {thread_id}. Status: {r.status_code}")
-        if r.status_code != 200:
-            print(f"DEBUG: Szczegóły błędu: {r.text}")
+        r = requests.post(url, json=payload, timeout=15)
+        response_data = r.json()
+        
+        if response_data.get("ok"):
+            print(f"✅ SUKCES: Wiadomość wysłana do wątku {thread_id}")
+        else:
+            print(f"❌ BŁĄD TELEGRAMA: {response_data.get('description')}")
+            # Jeśli błąd to 'thread not found', spróbuj wysłać bez wątku
+            if "thread not found" in response_data.get('description', '').lower():
+                print("⚠️ Wątek nie istnieje. Próbuję wysłać na czat główny...")
+                del payload["message_thread_id"]
+                requests.post(url, json=payload)
+                
         return r.status_code
     except Exception as e:
-        print(f"BŁĄD KRYTYCZNY: {e}")
+        print(f"💥 BŁĄD KRYTYCZNY: {e}")
         return 500
+
 
 
 if __name__ == "__main__":
