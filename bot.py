@@ -106,7 +106,9 @@ def send_to_telegram(text, thread_id):
 
     }
     r = requests.post(url, json=payload)
-    return r.status_code
+print(f"DEBUG: Telegram response: {r.text}") # To pokaże błąd w logach Actions
+return r.status_code
+
 
 
 if __name__ == "__main__":
